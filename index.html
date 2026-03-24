@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HUD SPEED</title>
+
+<style>
+html, body {
+  margin:0;
+  background:transparent;
+  overflow:hidden;
+  font-family:Arial;
+}
+
+/* HUD container */
+.hud {
+  position:absolute;
+  bottom:20px;
+  left:20px;
+  width:260px;
+  height:260px;
+}
+
+/* circle */
+.speedo {
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  border:4px solid rgba(255,255,255,0.2);
+  position:relative;
+}
+
+/* needle */
+.needle {
+  position:absolute;
+  width:3px;
+  height:110px;
+  background:red;
+  bottom:50%;
+  left:50%;
+  transform-origin:bottom center;
+}
+
+/* center */
+.center {
+  position:absolute;
+  width:10px;
+  height:10px;
+  background:white;
+  border-radius:50%;
+  bottom:50%;
+  left:50%;
+  transform:translate(-50%,50%);
+}
+
+/* speed text */
+.speed-text {
+  position:absolute;
+  bottom:50px;
+  width:100%;
+  text-align:center;
+  font-size:28px;
+  color:white;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hud">
+  <div class="speedo">
+    <div class="needle" id="needle"></div>
+    <div class="center"></div>
+    <div class="speed-text" id="speed">TAP TO START</div>
+  </div>
+</div>
+
+<script>
+let currentSpeed = 0;
+let targetSpeed = 0;
+let active = false;
+
+// start GPS
+document.body.addEventListener("click", () => {
+  if (active) return;
+
+  navigator.geolocation.watchPosition(pos => {
+    let speed = pos.coords.speed;
+
+    if (speed !== null) {
+      targetSpeed = speed * 3.6;
+      active = true;
+    }
+  }, err => console.log(err), {
+    enableHighAccuracy:true
+  });
+});
+
+// animation
+function animate() {
+  if (active) {
+    currentSpeed += (targetSpeed - currentSpeed) * 0.15;
+  }
+
+  let display = Math.round(currentSpeed);
+  document.getElementById("speed").innerText = display + " KMH";
+
+  let angle = (currentSpeed / 180) * 270;
+  document.getElementById("needle").style.transform =
+    "rotate(" + angle + "deg)";
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
