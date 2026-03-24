@@ -161,4 +161,29 @@ document.body.addEventListener("click", () => {
       document.getElementById("compass").innerText = dir;
     }
 
-  }, err =>
+  }, err => console.log(err), {
+    enableHighAccuracy:true
+  });
+});
+
+// animasi
+function animate() {
+  if (active) {
+    currentSpeed += (targetSpeed - currentSpeed) * 0.15;
+  }
+
+  let display = Math.round(currentSpeed);
+  document.getElementById("speed").innerText = display;
+
+  let angle = (currentSpeed / 180) * 270;
+  document.getElementById("needle").style.transform =
+    "rotate(" + angle + "deg)";
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
