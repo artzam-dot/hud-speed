@@ -1,1 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>HUD PRO</title>
 
+<style>
+html, body {
+  margin:0;
+  background:transparent;
+  overflow:hidden;
+  font-family:Arial;
+}
+
+/* container */
+.hud {
+  position:absolute;
+  bottom:20px;
+  left:20px;
+  width:300px;
+  height:300px;
+}
+
+/* circle */
+.speedo {
+  width:100%;
+  height:100%;
+  border-radius:50%;
+  border:5px solid rgba(255,255,255,0.2);
+  position:relative;
+}
+
+/* ticks */
+.tick {
+  position:absolute;
+  width:2px;
+  height:14px;
+  background:white;
+  top:10px;
+  left:50%;
+  transform-origin:bottom center;
+  opacity:0.6;
+}
+
+/* numbers */
+.number {
+  position:absolute;
+  color:white;
+  font-size:12px;
+  transform:translate(-50%, -50%);
+}
+
+/* needle */
+.needle {
+  position:absolute;
+  width:4px;
+  height:140px;
+  background:red;
+  bottom:50%;
+  left:50%;
+  transform-origin:bottom center;
+  box-shadow:0 0 10px red;
+}
+
+/* center */
+.center {
+  position:absolute;
+  width:14px;
+  height:14px;
+  background:white;
+  border-radius:50%;
+  bottom:50%;
+  left:50%;
+  transform:translate(-50%,50%);
+}
+
+/* digital speed */
+.speed-text {
+  position:absolute;
+  bottom:80px;
+  width:100%;
+  text-align:center;
+  font-size:42px;
+  color:white;
+  font-weight:bold;
+}
+
+/* compass */
+.compass {
+  position:absolute;
+  top:-40px;
+  left:50%;
+  transform:translateX(-50%);
+  color:white;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="hud">
+  <div class="compass" id="compass">N</div>
+  <div class="speedo" id="speedo">
+    <div class="needle" id="needle"></div>
+    <div class="center"></div>
+    <div class="speed-text" id="speed">0</div>
+  </div>
+</div>
+
+<script>
+let speedo = document.getElementById("speedo");
+
+// ticks + angka
+for (let i = 0; i <= 18; i++) {
+  let angle = i * 15;
+
+  let tick = document.createElement("div");
+  tick.className = "tick";
+  tick.style.transform = "rotate(" + angle + "deg)";
+  speedo.appendChild(tick);
+
+  let num = document.createElement("div");
+  num.className = "number";
+  let value = i * 10;
+
+  let rad = (angle - 135) * Math.PI / 180;
+  let x = 150 + Math.cos(rad) * 120;
+  let y = 150 + Math.sin(rad) * 120;
+
+  num.style.left = x + "px";
+  num.style.top = y + "px";
+  num.innerText = value;
+
+  speedo.appendChild(num);
+}
+
+let currentSpeed = 0;
+let targetSpeed = 0;
+let active = false;
+
+// GPS
+document.body.addEventListener("click", () => {
+  if (active) return;
+
+  navigator.geolocation.watchPosition(pos => {
+    let speed = pos.coords.speed;
+
+    if (speed !== null) {
+      targetSpeed = speed * 3.6;
+      active = true;
+    }
+
+    // compass
+    let heading = pos.coords.heading;
+    if (heading !== null) {
+      let dir = "N";
+      if (heading > 45 && heading <= 135) dir = "E";
+      else if (heading > 135 && heading <= 225) dir = "S";
+      else if (heading > 225 && heading <= 315) dir = "W";
+      document.getElementById("compass").innerText = dir;
+    }
+
+  }, err => console.log(err), {
+    enableHighAccuracy:true
+  });
+});
+
+// animasi
+function animate() {
+  if (active) {
+    currentSpeed += (targetSpeed - currentSpeed) * 0.15;
+  }
+
+  let display = Math.round(currentSpeed);
+  document.getElementById("speed").innerText = display;
+
+  let angle = (currentSpeed / 180) * 270;
+  document.getElementById("needle").style.transform =
+    "rotate(" + angle + "deg)";
+
+  requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+
+</body>
+</html>
